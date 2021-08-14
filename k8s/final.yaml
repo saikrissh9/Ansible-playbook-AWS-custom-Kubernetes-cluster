@@ -152,7 +152,7 @@ spec:
         name: wordpress
         env:
         - name: WORDPRESS_DB_HOST
-          value: backend:3306
+          value: backend
         - name: WORDPRESS_DB_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -183,5 +183,5 @@ spec:
   ports:
   - port: 80
     nodePort: 32000
-    targetPort: 8080
-    name: http
+    #targetPort: 8080
+    #name: http
