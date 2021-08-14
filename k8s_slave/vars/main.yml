@@ -1,7 +1,0 @@
----
-# vars file for k8s_slave
-# vars file for k8s_slave
-service_names:
-  - "docker"
-  - "kubelet"
-password: sai
