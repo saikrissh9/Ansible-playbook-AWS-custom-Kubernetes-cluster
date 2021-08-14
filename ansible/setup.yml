@@ -36,4 +36,4 @@
           cd /
           git clone https://github.com/saikrissh9/capstone.git
           cd capstone/k8s/
-          kubectl apply -f final.yml         
+          kubectl apply -f final.yaml         
