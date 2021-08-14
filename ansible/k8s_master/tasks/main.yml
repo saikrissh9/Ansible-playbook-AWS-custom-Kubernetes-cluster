@@ -65,6 +65,7 @@
 - name: Setting up NFS on Master Node
   shell:
     cmd: | 
+      sudo yum install git -y
       sudo yum install nfs-utils -y
       echo "/ 172.31.0.0/16(rw,sync,no_root_squash)" >>  /etc/exports      
       sudo mkdir /{mysql,html}
