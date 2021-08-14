@@ -124,7 +124,7 @@
     target_id: "{{ item}}"
     region: "{{ region_name }}"
     target_group_name: lab
-    target_port: 80
+    target_port: 32000
     state: present
   with_items : "{{ groups['tg'] }}"
 
