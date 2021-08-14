@@ -60,7 +60,7 @@ metadata:
   name: mysql-pass
 type: Opaque
 data:
-  password: c2Fp
+  password: c2Fp   # replace with your Base64 encoded password
 
 # ---
 # kind: NetworkPolicy
