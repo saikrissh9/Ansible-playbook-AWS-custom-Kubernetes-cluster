@@ -15,9 +15,9 @@ Description:
 2. create a new project directory mkdir project
 3. create cred.yml using 'ansible-vault create cred.yml' and store AWS access & secret keys in the prject directory
 4. create roles folder mkdir project/roles
-5. Run below commands insides roles folder:
-      ansible-galaxy init ec2
-      ansible-galaxy init k8s_master
+5. Run below commands insides roles folder: 
+      ansible-galaxy init ec2;
+      ansible-galaxy init k8s_master;
       ansible-galaxy init k8s_slave
 6. Clone https://github.com/saikrissh9/capstone.git in a temp location
 7. mv setup.yml and ansible.cfg from capstone to the project directory
