@@ -1,5 +1,25 @@
-# capstone
+# capstone - Ansible playbook to deploy Wordpress & MYSQL in a custom Kubernetes cluster on AWS
+
+Description:
+ Creates Wordpress & MYSQL K8S cluster on AWS using EC2 instances, EIP, and NLB
+   - creates EC2 instances, target group, and NLB(X:80 -> workers:32000) with EIP
+   - Installs K8S cluster
+   - Installs NFS server on K8S Master and uses '/html' '/mysql' directories on Master as persistant volume mounts for Wordpress & MySQL pods
+   - Deploys Wordpress, MySQL pods with persistent volumes with Nodeport (32000)
+   -  Wordpress access at EIP:80
 ----------------------
+**Preparation:**
 1. Install ansible
-2. create a new project folder mkdir capstone
-3. create cred.yml using 'ansible-vault create cred.yml' and store AWS access & secret keys
+2. create a new project directory mkdir project
+3. create cred.yml using 'ansible-vault create cred.yml' and store AWS access & secret keys in the prject directory
+4. create roles folder mkdir project/roles
+5. Run below commands insides roles folder:
+      ansible-galaxy init ec2
+      ansible-galaxy init k8s_master
+      ansible-galaxy init k8s_slave
+6. Clone https://github.com/saikrissh9/capstone.git in a temp location
+7. mv setup.yml and ansible.cfg from capstone to the project directory
+8. Also, replace tasks/main.yml and vars/main.yml in the project 'project/roles/' for ec2, k8s_master, k8s_slaves with the ones from capstone directory
+9. Create security groups, keypair, subnet in AWS and update the project/roles/ec2/vars/main.yml with that info
+10. Download the created keypair (ex: lab.pem) and place it in the project directory
+11. Run 'ansible-playbook setup.yml --ask-vault-pass'
