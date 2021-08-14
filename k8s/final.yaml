@@ -62,21 +62,6 @@ type: Opaque
 data:
   password: c2Fp   # replace with your Base64 encoded password
 
-# ---
-# kind: NetworkPolicy
-# apiVersion: networking.k8s.io/v1
-# metadata:
-#   name: netpolicy-db
-# spec:
-#   podSelector:
-#     matchLabels:
-#       app: mysql
-#   ingress:
-#   - from:
-#     - podSelector:
-#         matchLabels:
-#           access: "wordpress"
-
 ---
 apiVersion: v1
 kind: Service
