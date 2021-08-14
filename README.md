@@ -8,7 +8,7 @@ Description:
    - Deploys Wordpress, MySQL (DB pass: sai) pods with persistent volumes and Nodeport service (32000). [to set different DB password, fork this project, edit password in k8s/final.yml and change the git clone link in setup.yml to your git link] 
    -  Wordpress access at EIP:80
    
-   Used OS:  Ansible server - Ubuntu  K8S - Amazon Linux
+   OS:  Ansible server - Ubuntu 20.04  K8S - Amazon Linux2
 ----------------------
 **Preparation:**
 1. Install ansible
