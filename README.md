@@ -5,8 +5,10 @@ Description:
    - creates EC2 instances, target group, and NLB(X:80 -> workers:32000) with EIP
    - Installs K8S cluster
    - Installs NFS server on K8S Master and uses '/html' '/mysql' directories on Master as persistant volume mounts for Wordpress & MySQL pods
-   - Deploys Wordpress, MySQL (DB pass: sai) pods with persistent volumes and Nodeport service (32000). [to set different DB password, fork the project, edit password in k8s/final.yml and change the git clone link in setup.yml to your git link] 
+   - Deploys Wordpress, MySQL (DB pass: sai) pods with persistent volumes and Nodeport service (32000). [to set different DB password, fork this project, edit password in k8s/final.yml and change the git clone link in setup.yml to your git link] 
    -  Wordpress access at EIP:80
+   
+   Used OS:  Ansible server - Ubuntu  K8S - Amazon Linux
 ----------------------
 **Preparation:**
 1. Install ansible
