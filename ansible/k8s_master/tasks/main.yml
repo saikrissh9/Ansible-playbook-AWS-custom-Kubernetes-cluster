@@ -80,7 +80,17 @@
       sudo systemctl start nfs-lock
       sudo systemctl start nfs-idmap
   
-
+- name: ETCDCTL setup
+  shell:
+    cmd: |
+      ETCD_VER=v3.5.0
+      DOWNLOAD_URL=https://storage.googleapis.com/etcd
+      mkdir -p /etcdownload
+      curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+      tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /etcdownload --strip-components=1
+      rm -f /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+      mv /etcdownload/etcd /etcdownload/etcdctl /etcdownload/etcdutl /usr/bin
+      
 - name: Cleaning Caches on RAM
   shell: echo 3 > /proc/sys/vm/drop_caches
 # tasks file for k8s_master
