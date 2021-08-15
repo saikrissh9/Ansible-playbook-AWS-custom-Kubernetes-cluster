@@ -170,3 +170,17 @@ spec:
     nodePort: 32000
     #targetPort: 8080
     #name: http
+    
+---
+kind: HorizontalPodAutoscaler
+apiVersion: autoscaling/v1
+metadata:
+  name: slkuberproject-hpa
+spec:
+  targetCPUUtilizationPercentage: 50
+  minReplicas: 3
+  maxReplicas: 6   
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
