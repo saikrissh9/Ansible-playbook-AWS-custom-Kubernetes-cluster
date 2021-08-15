@@ -148,9 +148,9 @@ spec:
         volumeMounts:
         - mountPath: /var/www/html
           name: wp-pvc
-        # resources:
-        #   limits:
-        #     cpu: 100m
+        resources:
+          limits:
+            cpu: 3m
       volumes:
       - name: wp-pvc
         persistentVolumeClaim:
