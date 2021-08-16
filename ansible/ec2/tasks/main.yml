@@ -10,13 +10,13 @@
 
 - name: Creating Security Group for K8s Cluster
   ec2_group:
-    name: "{{ sg_name }}"
+    name: lab
     description: Security Group for allowing all port
     region: "{{ region_name }}"
     vpc_id: "{{vpc_id}}"
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
-    security_token: "{{security_token}}"
+    #security_token: "{{security_token}}"
     rules:
     - proto: all
       cidr_ip: 172.31.0.0/16
@@ -28,11 +28,11 @@
 
 - name: Create a new EC2 key
   ec2_key:
-    name: "{{ keypair }}"
+    name: lab
     region: "{{ region_name }}"
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
-    security_token: "{{security_token}}"
+    #security_token: "{{security_token}}"
   register: ec2_ke
 
 - name: Save private key
@@ -41,11 +41,11 @@
 
 - name: Launching K8s Master on AWS
   ec2:
-    key_name: "{{ keypair }}"
+    key_name: lab
     instance_type: "{{ instance_flavour }}"
     image: "{{ ami_id }}"
     wait: true
-    group: "{{ sg_name }}"
+    group: lab
     count: 1
     vpc_subnet_id: "{{ subnet_name }}"
     assign_public_ip: yes
@@ -53,6 +53,7 @@
     state: present
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
+    #security_token: "{{security_token}}"
     instance_tags:
       Name: Master
   register: master
@@ -60,11 +61,11 @@
 
 - name: Launching K8s workers on AWS
   ec2:
-    key_name: "{{ keypair }}"
+    key_name: lab
     instance_type: "{{ instance_flavour }}"
     image: "{{ ami_id }}"
     wait: true
-    group: "{{ sg_name }}"
+    group: lab
     count: 2
     vpc_subnet_id: "{{ subnet_name }}"
     assign_public_ip: yes
@@ -72,6 +73,7 @@
     state: present
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
+    #security_token: "{{security_token}}"
     instance_tags:
       Name: Worker
   register: worker
@@ -131,6 +133,7 @@
     region: "{{ region_name }}"
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
+    #security_token: "{{security_token}}"
     health_check_protocol: TCP
     state: present
 
@@ -138,6 +141,7 @@
   elb_target:
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
+    #security_token: "{{security_token}}"
     target_id: "{{ item}}"
     region: "{{ region_name }}"
     target_group_name: lab
@@ -151,6 +155,7 @@
     state: present
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
+    #security_token: "{{security_token}}"
     region: "{{ region_name }}"
     reuse_existing_ip_allowed: true
   register: eip
@@ -160,6 +165,7 @@
     name: myelb
     aws_access_key: "{{ access_key }}"
     aws_secret_key: "{{ secret_key }}"
+    #security_token: "{{security_token}}"
     region: "{{ region_name }}"
     #cross_zone_load_balancing: yes
     subnet_mappings:
