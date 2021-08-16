@@ -1,0 +1,180 @@
+---
+# tasks file for ec2
+
+# tasks file for ec2
+- name: Installing boto & boto3 on local system
+  pip:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ python_pkgs }}"
+
+- name: Creating Security Group for K8s Cluster
+  ec2_group:
+    name: lab
+    description: Security Group for allowing all port
+    region: "{{ region_name }}"
+    vpc_id: "{{vpc_id}}"
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
+    #security_token: "{{security_token}}"
+    rules:
+    - proto: all
+      cidr_ip: 172.31.0.0/16
+    - proto: all
+      cidr_ip: "{{my_ip}}"
+    rules_egress:
+    - proto: all
+      cidr_ip: 0.0.0.0/0
+
+- name: Create a new EC2 key
+  ec2_key:
+    name: lab
+    region: "{{ region_name }}"
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
+    #security_token: "{{security_token}}"
+  register: ec2_ke
+
+- name: Save private key
+  copy: content="{{ ec2_ke.key.private_key }}" dest="{{ key_path }}" mode=0600
+  when: ec2_ke.changed
+
+- name: Launching K8s Master on AWS
+  ec2:
+    key_name: lab
+    instance_type: "{{ instance_flavour }}"
+    image: "{{ ami_id }}"
+    wait: true
+    group: lab
+    count: 1
+    vpc_subnet_id: "{{ subnet_name }}"
+    assign_public_ip: yes
+    region: "{{ region_name }}"
+    state: present
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
+    #security_token: "{{security_token}}"
+    instance_tags:
+      Name: Master
+  register: master
+
+
+- name: Launching K8s workers on AWS
+  ec2:
+    key_name: lab
+    instance_type: "{{ instance_flavour }}"
+    image: "{{ ami_id }}"
+    wait: true
+    group: lab
+    count: 2
+    vpc_subnet_id: "{{ subnet_name }}"
+    assign_public_ip: yes
+    region: "{{ region_name }}"
+    state: present
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
+    #security_token: "{{security_token}}"
+    instance_tags:
+      Name: Worker
+  register: worker
+
+
+- name: Wait for SSH to come up
+  wait_for:
+    host: "{{ item.public_dns_name }}"
+    port: 22
+    state: started
+  loop: "{{worker.instances}}"
+
+
+
+- name: accept new ssh fingerprints
+  become: true
+  become_user: sai                                         
+  shell: ssh-keyscan -H "{{ item.public_ip }}" >> ~/.ssh/known_hosts          
+  with_items: "{{ master.instances }}"
+
+- name: accept new ssh fingerprints                                         
+  become: true
+  become_user: sai  
+  shell: ssh-keyscan -H "{{ item.public_ip }}" >> ~/.ssh/known_hosts          
+  with_items: "{{ worker.instances }}"
+
+
+
+- name: Add Master to host group ec2_master
+  add_host:
+    hostname: "{{ item.public_ip }}"
+    groupname: ec2_master
+  with_items: "{{master.instances}}"
+
+
+
+- name: Add workers to host group ec2_slave
+  add_host:
+    hostname: "{{ item.public_ip }}"
+    groupname: ec2_slave
+  with_items: "{{worker.instances}}"  
+
+- name: Add workers to target group
+  add_host:
+    hostname: "{{ item.id }}"
+    groupname: tg
+  with_items: "{{worker.instances}}"  
+
+
+- name: target_groups
+  elb_target_group:
+    name: lab
+    stickiness_type: source_ip
+    protocol: TCP
+    port: 80
+    vpc_id: "{{vpc_id}}"
+    region: "{{ region_name }}"
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
+    #security_token: "{{security_token}}"
+    health_check_protocol: TCP
+    state: present
+
+- name: Add instances to target group    
+  elb_target:
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
+    #security_token: "{{security_token}}"
+    target_id: "{{ item}}"
+    region: "{{ region_name }}"
+    target_group_name: lab
+    target_port: 32000
+    state: present
+  with_items : "{{ groups['tg'] }}"
+
+
+- name: allocate a new elastic IP without associating it to anything
+  community.aws.ec2_eip:
+    state: present
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
+    #security_token: "{{security_token}}"
+    region: "{{ region_name }}"
+    reuse_existing_ip_allowed: true
+  register: eip
+
+- name: Create an ELB with an attached Elastic IP address
+  community.aws.elb_network_lb:
+    name: myelb
+    aws_access_key: "{{ access_key }}"
+    aws_secret_key: "{{ secret_key }}"
+    #security_token: "{{security_token}}"
+    region: "{{ region_name }}"
+    #cross_zone_load_balancing: yes
+    subnet_mappings:
+      - SubnetId: "{{subnet_name}}"
+        AllocationId: "{{eip.allocation_id}}"
+    listeners:
+      - Protocol: TCP # Required. The protocol for connections from clients to the load balancer (TCP, TLS, UDP or TCP_UDP) (case-sensitive).
+        Port: 80 # Required. The port on which the load balancer is listening.
+        DefaultActions:
+          - Type: forward # Required. Only 'forward' is accepted at this time
+            TargetGroupName: lab # Required. The name of the target group
+    state: present
