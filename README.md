@@ -16,12 +16,12 @@ Description:
 2. create a new project directory mkdir project
 3. create cred.yml using 'ansible-vault create cred.yml' and store AWS access & secret keys(& security_token, if present) in the project directory
 4. create roles folder mkdir project/roles
-5. Run below commands insides roles folder: 
+5. Run below commands inside roles folder: 
       ansible-galaxy init ec2;
       ansible-galaxy init k8s_master;
       ansible-galaxy init k8s_slave
 6. Clone https://github.com/saikrissh9/capstone.git in a temp location
-7. mv setup.yml and ansible.cfg from capstone to the project directory
-8. Also, replace tasks/main.yml and vars/main.yml in the project 'project/roles/' for ec2, k8s_master, k8s_slaves with the ones from capstone directory
+7. mv setup.yml and ansible.cfg from capstone/project/ to the project directory(project/)
+8. Also, replace tasks/main.yml and vars/main.yml in 'project/roles/[ec2 |k8s_master|k8s_slaves]' with the ones from the 'capstone/project/roles/[ec2 |k8s_master|k8s_slaves]' directories
 9. Update the project/roles/ec2/vars/main.yml with VPC ID, subnet, AMI ID, path to store generated keypair ( has to be in the project root folder at same level as setup.yml) and IP info.
 10. Run 'ansible-playbook setup.yml --ask-vault-pass'
