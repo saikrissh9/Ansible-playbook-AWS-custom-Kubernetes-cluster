@@ -4,4 +4,3 @@
 service_names:
   - "docker"
   - "kubelet"
-password: sai
