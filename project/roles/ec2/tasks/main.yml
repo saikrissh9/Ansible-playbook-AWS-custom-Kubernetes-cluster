@@ -89,14 +89,14 @@
 
 
 - name: accept new ssh fingerprints
-  become: true
-  become_user: sai                                         
+  #become: true
+  #become_user: sai                                         
   shell: ssh-keyscan -H "{{ item.public_ip }}" >> ~/.ssh/known_hosts          
   with_items: "{{ master.instances }}"
 
 - name: accept new ssh fingerprints                                         
-  become: true
-  become_user: sai  
+  #become: true
+  #become_user: sai  
   shell: ssh-keyscan -H "{{ item.public_ip }}" >> ~/.ssh/known_hosts          
   with_items: "{{ worker.instances }}"
 
