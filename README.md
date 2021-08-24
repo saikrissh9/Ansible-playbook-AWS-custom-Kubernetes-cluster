@@ -1,4 +1,4 @@
-# Capstone project - Ansible playbook to deploy Wordpress & MYSQL in a custom Kubernetes cluster on AWS
+# Capstone project - Ansible playbook to deploy Wordpress & MYSQL in a custom Kubernetes cluster on AWS- Amazon Linux2
 
 Description:
  Creates Wordpress & MYSQL K8S cluster on AWS using EC2 instances, EIP, and NLB
