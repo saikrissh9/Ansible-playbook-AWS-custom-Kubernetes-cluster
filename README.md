@@ -12,7 +12,7 @@ Description:
    OS:  Ansible server - Ubuntu 20.04  K8S - Amazon Linux2
 ----------------------
 **Preparation:**
-1. Install ansible
+1. Install ansible on a ubuntu server
 2. create a new project directory mkdir project
 3. create cred.yml using 'ansible-vault create cred.yml' and store AWS access & secret keys(& security_token, if present) in the project directory
 4. create roles folder mkdir project/roles
@@ -23,5 +23,5 @@ Description:
 6. Clone https://github.com/saikrissh9/capstone.git in a temp location
 7. mv setup.yml and ansible.cfg from capstone/project/ to the project directory(project/)
 8. Also, replace tasks/main.yml and vars/main.yml in 'project/roles/[ec2 |k8s_master|k8s_slaves]' with the ones from the 'capstone/project/roles/[ec2 |k8s_master|k8s_slaves]' directories
-9. Update the project/roles/ec2/vars/main.yml with VPC ID, subnet, AMI ID, path to store generated keypair ( has to be in the project root folder at same level as setup.yml) and IP info.
+9. Update the project/roles/ec2/vars/main.yml with VPC ID, subnet, Amazon Linux2 AMI ID, path to store generated keypair ( has to be in the project root folder at same level as setup.yml) and IP info.
 10. Run 'ansible-playbook setup.yml --ask-vault-pass'
