@@ -1,0 +1,11 @@
+python_pkgs:
+        - boto
+        - boto3
+
+region_name: us-west-1  #us-west-1 - YOUR_REGION
+subnet_name: subnet-31db5c57 # - YOUR_SUBNET
+ami_id:  ami-07b068f843ec78e72  #ami-04b6c97b14c54de18 Amazon LinuX or REDHAT AMI ID
+instance_flavour: t3.small  #t2.micro YOUR_INSTANCE_TYPE
+vpc_id: vpc-cf4297a9  #YOUR_VPC_ID
+my_ip: 172.249.133.129/32 #X.X.X.X/32 YOUR_ANSIBLE_MACHINE_PUBLIC_IP to add it to Instances SECURITY GROUP with ALL ACCESS refer /roles/ec2/tasks/main.yaml
+key_path: /home/sai/sl-aws/lab.pem

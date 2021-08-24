@@ -1,0 +1,151 @@
+---
+# tasks file for k8s_master
+- name: Make the Swap inactive
+  command: swapoff -a
+
+- name: Remove Swap entry from /etc/fstab.
+  lineinfile:
+    dest: /etc/fstab
+    regexp: swap
+    state: absent
+
+
+- name: "Update Repository cache"
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+    force_apt_get: yes
+
+- name: Installing Prerequisites for Kubernetes
+  apt: 
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg-agent
+      - vim
+      - software-properties-common
+      - nfs-common
+      - nfs-kernel-server
+    state: present
+
+- name: Add Docker’s official GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker Repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+    state: present
+    filename: docker
+    mode: 0600
+
+- name: Install Docker Engine.
+  apt: 
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
+
+- name: Enable service docker, and enable persistently
+  service: 
+    name: docker
+    enabled: yes
+
+- name: Add Google official GPG key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add Kubernetes Repository
+  apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main 
+    state: present
+    filename: kubernetes
+    mode: 0600
+
+- name: Installing Kubernetes Cluster Packages.
+  apt: 
+    name:
+      - kubeadm
+      - kubectl
+      - kubelet
+    state: present
+
+- name: Enable service kubelet, and enable persistently
+  service: 
+    name: kubelet
+    enabled: yes   
+
+
+- name: Updating Docker cgroup on Master Node
+  copy:
+    dest: /etc/docker/daemon.json
+    content: |
+      {
+      "exec-opts": ["native.cgroupdriver=systemd"]
+      }
+
+- name: Restart docker on Master Node
+  service:
+    name: docker
+    state: restarted
+
+- name: Initializing k8s cluster
+  command: kubeadm init --pod-network-cidr=10.244.0.0/16 --ignore-preflight-errors=NumCPU --ignore-preflight-errors=Mem
+
+- name: Setting up kubectl on Master Node
+  shell:
+    cmd: |        
+      mkdir -p  $HOME/.kube
+      sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+      sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+- name: Deploying Flannel on Master Node
+  command: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+- name: Creating token for Slave
+  command: kubeadm token create  --print-join-command
+  register: token
+
+- name: master private dns
+  command: curl http://169.254.169.254/latest/meta-data/local-ipv4
+  register: master_ip
+
+- name: Cleaning Caches on RAM
+  shell: echo 3 > /proc/sys/vm/drop_caches
+
+- name: Setting up NFS on Master Node to use WordPress & MYSQL pod volumes
+  shell:
+    cmd: | 
+      echo "/ 172.31.0.0/16(rw,sync,no_root_squash)" | sudo tee -a  /etc/exports     
+      sudo mkdir /mysql
+      sudo mkdir /html
+      sudo chmod -R 755 /mysql
+      sudo chmod -R 755 /html
+      sudo chown nobody:nogroup /mysql
+      sudo chown nobody:nogroup /html
+
+- name: Restart NFS
+  service:
+    name: nfs-kernel-server
+    state: restarted
+
+
+- name: ETCDCTL setup
+  shell:
+    cmd: |
+      ETCD_VER=v3.5.0
+      DOWNLOAD_URL=https://storage.googleapis.com/etcd
+      mkdir -p /etcdownload
+      curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+      tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /etcdownload --strip-components=1
+      rm -f /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+      mv /etcdownload/etcd /etcdownload/etcdctl /etcdownload/etcdutl /usr/local/bin
+      
+- name: Cleaning Caches on RAM
+  shell: echo 3 > /proc/sys/vm/drop_caches
+# tasks file for k8s_master
+

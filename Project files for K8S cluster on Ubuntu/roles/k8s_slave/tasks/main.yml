@@ -1,0 +1,115 @@
+---
+# tasks file for k8s_slave
+- name: Make the Swap inactive
+  command: swapoff -a
+
+- name: Remove Swap entry from /etc/fstab.
+  lineinfile:
+    dest: /etc/fstab
+    regexp: swap
+    state: absent
+
+- name: "Update Repository cache"
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+    force_apt_get: yes
+
+- name: Installing Prerequisites for Kubernetes
+  apt: 
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg-agent
+      - vim
+      - software-properties-common
+      - nfs-common
+    state: present
+
+- name: Add Docker’s official GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker Repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+    state: present
+    filename: docker
+    mode: 0600
+
+- name: Install Docker Engine.
+  apt: 
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
+
+- name: Enable service docker, and enable persistently
+  service: 
+    name: docker
+    enabled: yes
+
+- name: Add Google official GPG key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add Kubernetes Repository
+  apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main 
+    state: present
+    filename: kubernetes
+    mode: 0600
+
+- name: Installing Kubernetes Cluster Packages.
+  apt: 
+    name:
+      - kubeadm
+      - kubectl
+      - kubelet
+    state: present
+
+- name: Enable service kubelet, and enable persistently
+  service: 
+    name: kubelet
+    enabled: yes  
+
+- name: Updating Docker cgroup on Slave Node
+  copy:
+    dest: /etc/docker/daemon.json
+    content: |
+      {
+      "exec-opts": ["native.cgroupdriver=systemd"]
+      }
+
+- name: Restart Docker on Slave Node
+  service:
+    name: docker
+    state: restarted
+
+- name: Updating IP tables on Slave Node
+  copy:
+    dest: /etc/sysctl.d/k8s.conf
+    content: |
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.bridge.bridge-nf-call-iptables = 1
+
+- name: Reloading sysctl on Slave Node
+  command: sysctl --system
+
+- name: Joining the master node
+  command: "{{ hostvars[groups['ec2_master'][0]]['token']['stdout'] }}"
+
+- name: Adding the master node dns to hosts file
+  shell: echo "{{ hostvars[groups['ec2_master'][0]]['master_ip']['stdout'] }}" nfs_server | sudo tee -a /etc/hosts
+
+- name: Cleaning Caches on RAM
+  shell: echo 3 > /proc/sys/vm/drop_caches
+# tasks file for k8s_slave
+
+
+
+
