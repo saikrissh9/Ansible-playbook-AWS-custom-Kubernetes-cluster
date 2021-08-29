@@ -12,7 +12,7 @@ Description:
    OS:  Ansible server - Ubuntu 20.04  K8S - Amazon Linux2
 ----------------------
 **Preparation:**
-1. Install ansible on a ubuntu server
+1. Install ansible, ansible-galaxy aws collection, pip on a ubuntu server [ansible-galaxy collection install community.aws -p ./collections; sudo apt install pip]
 2. create a new project directory mkdir project
 3. create cred.yml using 'ansible-vault create cred.yml' and store AWS access & secret keys(& security_token, if present) in the project directory
 4. create roles folder mkdir project/roles
